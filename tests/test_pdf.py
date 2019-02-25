@@ -47,7 +47,7 @@ class PdfReaderTestCases(unittest.TestCase):
         except Exception as e:
             self.assertTrue(
                 False, "Exception '%s' was raised in %s.__del__()" %
-                (e, PdfFileReader.__name__)
+                       (e, PdfFileReader.__name__)
             )
 
         try:
@@ -167,7 +167,7 @@ class PdfReaderTestCases(unittest.TestCase):
         ``PdfFileReader.objects()`` second part (dealing with XStream objects)
         is invoked and implicitly tested.
         """
-        inputFiles = ("crazyones.pdf", )
+        inputFiles = ("crazyones.pdf",)
 
         for filename in inputFiles:
             filepath = join(self.localDataRoot, filename)
@@ -213,7 +213,7 @@ class PdfReaderTestCases(unittest.TestCase):
         previous test cases did.
         """
         self.maxDiff = None
-        inputFiles = ("crazyones.pdf", )
+        inputFiles = ("crazyones.pdf",)
         # expItems and actualItems will contain two-element tuples, where the
         # first element is the object ID, used to sort.
         sortKey = lambda e: e[0]
@@ -265,7 +265,7 @@ class PdfReaderTestCases(unittest.TestCase):
         """
         self.maxDiff = None
         # TO-DO Possibly add a few other files to this test case
-        inputFiles = ("GeoBase_NHNC1_Data_Model_UML_EN.pdf", )
+        inputFiles = ("GeoBase_NHNC1_Data_Model_UML_EN.pdf",)
 
         for filename in inputFiles:
             filepath = join(self.localDataRoot, filename)
@@ -292,7 +292,7 @@ class PdfReaderTestCases(unittest.TestCase):
 
                 # If an item is in use in the XRef Stream, ensure then that it
                 # is marked free in the XRef Table.
-                if r._xrefStm[a.idnum][0] in (2, ):
+                if r._xrefStm[a.idnum][0] in (2,):
                     self.assertTrue(
                         expItems[e][-1],
                         "Item %d should be hid by the XRef Table, but it was "
