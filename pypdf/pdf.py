@@ -36,7 +36,7 @@ See README.md for links to FAQ, documentation, homepage, etc.
 """
 
 import io
-import ntpath
+import os
 import random
 import struct
 import time
@@ -408,7 +408,7 @@ class PdfFileWriter(object):
         for file in files:
             fname = file
             if cut_paths:
-                fname = ntpath.basename(fname)
+                fname = os.path.basename(fname)
             fdata = open(file, 'rb').read()
 
             # The entry for the file
