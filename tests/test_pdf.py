@@ -459,6 +459,38 @@ class PdfReaderTestCases(unittest.TestCase):
                         real = len(v['/Names']['/EmbeddedFiles']['/Names'])
                         self.assertEqual(2, real)
 
+    def testAttachFiles(self):
+        """
+        Tests the addAttachment function for attaching multiple files.
+
+        Since the Names array in the EmbeddedFiles dictionary contains both the
+        name (string) and indirect object (dictionary) for each file, we have
+        to check for two entries per attached file.
+        """
+
+        numAttachments = 3
+
+        # Make PDF with attachment
+        with PdfFileReader(join(TEST_DATA_ROOT, 'jpeg.pdf')) as reader:
+            with PdfFileWriter(join(TEST_DATA_ROOT, 'testAddAttachment',
+                                    'jpeg.pdf')) as writer:
+                writer.appendPagesFromReader(reader)
+
+                writer.attachFiles([join(
+                    TEST_DATA_ROOT, 'attachment_small.png')] * numAttachments)
+                writer.write()
+
+        # Check for attachment entries
+        with PdfFileReader(join(TEST_DATA_ROOT, 'testAddAttachment', 'jpeg.pdf'
+                                )) as pdf:
+            pdf.numPages  # For caching _cachedObjects data
+            for k, v in pdf._cachedObjects.items():
+                if '/Type' in v:
+                    if v['/Type'] == '/Catalog':
+                        self.assertIsNotNone(v['/Names']['/EmbeddedFiles'])
+                        real = len(v['/Names']['/EmbeddedFiles']['/Names'])
+                        self.assertEqual(numAttachments * 2, real)
+
 
 class AddJsTestCase(unittest.TestCase):
     def setUp(self):
