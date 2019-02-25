@@ -392,6 +392,15 @@ class PdfFileWriter(object):
         })
 
     def attachFiles(self, files, cut_paths=True):
+        """
+        Embed multiple files inside the PDF.
+        Similar to addAttachment but receives a file path or a list of file paths.
+        Allows attaching more than one file.
+
+        :param files: Single file path (string) or multiple file paths (list of strings).
+        :param cut_paths: Display file name only in PDF if True,
+                        else display full parameter string or list entry.
+        """
         if not isinstance(files, list):
             files = [files]
         files_array = ArrayObject()
