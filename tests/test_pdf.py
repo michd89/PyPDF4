@@ -7,7 +7,9 @@ that relies on a "fixture data" (e.g. a test file to read from) place it in the
 hint on how to do this).
 """
 import binascii
+import os
 import sys
+import tempfile
 import unittest
 
 from io import BytesIO
@@ -437,27 +439,30 @@ class PdfReaderTestCases(unittest.TestCase):
         to check for two entries per attached file.
         """
 
-        # Make PDF with attachment
-        with PdfFileReader(join(TEST_DATA_ROOT, 'jpeg.pdf')) as reader:
-            with PdfFileWriter(join(TEST_DATA_ROOT, 'testAddAttachment',
-                                    'jpeg.pdf')) as writer:
-                writer.appendPagesFromReader(reader)
-                with open(join(TEST_DATA_ROOT, 'attachment_small.png'), "rb") \
-                        as attachment_stream:
-                    read_data = attachment_stream.read()
-                    writer.addAttachment('attachment_small.png', read_data)
-                writer.write()
+        _, testfile = tempfile.mkstemp()
 
-        # Check for attachment entries
-        with PdfFileReader(join(TEST_DATA_ROOT, 'testAddAttachment', 'jpeg.pdf'
-                                )) as pdf:
-            pdf.numPages  # For caching _cachedObjects data
-            for k, v in pdf._cachedObjects.items():
-                if '/Type' in v:
-                    if v['/Type'] == '/Catalog':
-                        self.assertIsNotNone(v['/Names']['/EmbeddedFiles'])
-                        real = len(v['/Names']['/EmbeddedFiles']['/Names'])
-                        self.assertEqual(2, real)
+        try:
+            # Make PDF with attachment
+            with PdfFileReader(join(TEST_DATA_ROOT, 'jpeg.pdf')) as reader:
+                with PdfFileWriter(testfile) as writer:
+                    writer.appendPagesFromReader(reader)
+                    with open(join(TEST_DATA_ROOT, 'attachment_small.png'), "rb") \
+                            as attachment_stream:
+                        read_data = attachment_stream.read()
+                        writer.addAttachment('attachment_small.png', read_data)
+                    writer.write()
+
+            # Check for attachment entries
+            with PdfFileReader(testfile) as pdf:
+                pdf.numPages  # For caching _cachedObjects data
+                for k, v in pdf._cachedObjects.items():
+                    if '/Type' in v:
+                        if v['/Type'] == '/Catalog':
+                            self.assertIsNotNone(v['/Names']['/EmbeddedFiles'])
+                            real = len(v['/Names']['/EmbeddedFiles']['/Names'])
+                            self.assertEqual(2, real)
+        finally:
+            os.remove(testfile)
 
     def testAttachFiles(self):
         """
@@ -469,27 +474,29 @@ class PdfReaderTestCases(unittest.TestCase):
         """
 
         numAttachments = 3
+        _, testfile = tempfile.mkstemp()
 
-        # Make PDF with attachment
-        with PdfFileReader(join(TEST_DATA_ROOT, 'jpeg.pdf')) as reader:
-            with PdfFileWriter(join(TEST_DATA_ROOT, 'testAddAttachment',
-                                    'jpeg.pdf')) as writer:
-                writer.appendPagesFromReader(reader)
+        try:
+            # Make PDF with attachment
+            with PdfFileReader(join(TEST_DATA_ROOT, 'jpeg.pdf')) as reader:
+                with PdfFileWriter(testfile) as writer:
+                    writer.appendPagesFromReader(reader)
 
-                writer.attachFiles([join(
-                    TEST_DATA_ROOT, 'attachment_small.png')] * numAttachments)
-                writer.write()
+                    writer.attachFiles([join(
+                        TEST_DATA_ROOT, 'attachment_small.png')] * numAttachments)
+                    writer.write()
 
-        # Check for attachment entries
-        with PdfFileReader(join(TEST_DATA_ROOT, 'testAddAttachment', 'jpeg.pdf'
-                                )) as pdf:
-            pdf.numPages  # For caching _cachedObjects data
-            for k, v in pdf._cachedObjects.items():
-                if '/Type' in v:
-                    if v['/Type'] == '/Catalog':
-                        self.assertIsNotNone(v['/Names']['/EmbeddedFiles'])
-                        real = len(v['/Names']['/EmbeddedFiles']['/Names'])
-                        self.assertEqual(numAttachments * 2, real)
+            # Check for attachment entries
+            with PdfFileReader(testfile) as pdf:
+                pdf.numPages  # For caching _cachedObjects data
+                for k, v in pdf._cachedObjects.items():
+                    if '/Type' in v:
+                        if v['/Type'] == '/Catalog':
+                            self.assertIsNotNone(v['/Names']['/EmbeddedFiles'])
+                            real = len(v['/Names']['/EmbeddedFiles']['/Names'])
+                            self.assertEqual(numAttachments * 2, real)
+        finally:
+            os.remove(testfile)
 
 
 class AddJsTestCase(unittest.TestCase):
